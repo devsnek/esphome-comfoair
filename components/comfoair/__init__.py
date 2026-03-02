@@ -32,239 +32,272 @@ ComfoAirButton = comfoair_ns.class_("ComfoAirButton", button.Button)
 
 entities = {
     "text_sensor": {
-        "filter_status": text_sensor.text_sensor_schema(),
-        "frost_protection_level": text_sensor.text_sensor_schema(),
-        "preheating_valve": text_sensor.text_sensor_schema(),
+        ("Filter Status", "filter_status"): text_sensor.text_sensor_schema(),
+        (
+            "Frost Protection Level",
+            "frost_protection_level",
+        ): text_sensor.text_sensor_schema(),
+        ("Preheating Valve", "preheating_valve"): text_sensor.text_sensor_schema(),
     },
     "binary_sensor": {
-        "frost_protection_active": binary_sensor.binary_sensor_schema(),
-        "bypass_valve_open": binary_sensor.binary_sensor_schema(),
-        "preheating_state": binary_sensor.binary_sensor_schema(),
-        "summer_mode": binary_sensor.binary_sensor_schema(),
-        "supply_fan_active": binary_sensor.binary_sensor_schema(),
+        (
+            "Frost Protection Active",
+            "frost_protection_active",
+        ): binary_sensor.binary_sensor_schema(),
+        (
+            "Bypass Valve Open",
+            "bypass_valve_open",
+        ): binary_sensor.binary_sensor_schema(),
+        ("Preheating State", "preheating_state"): binary_sensor.binary_sensor_schema(),
+        ("Summer Mode", "summer_mode"): binary_sensor.binary_sensor_schema(),
+        (
+            "Supply Fan Active",
+            "supply_fan_active",
+        ): binary_sensor.binary_sensor_schema(),
     },
     "sensor": {
-        "intake_fan_speed": sensor.sensor_schema(
+        ("Intake Fan Speed", "intake_fan_speed"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_SPEED,
             unit_of_measurement=UNIT_PERCENT,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "exhaust_fan_speed": sensor.sensor_schema(
+        ("Exhaust Fan Speed", "exhaust_fan_speed"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_SPEED,
             unit_of_measurement=UNIT_PERCENT,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "intake_fan_speed_rpm": sensor.sensor_schema(
+        ("Intake Fan Speed RPM", "intake_fan_speed_rpm"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_SPEED,
             unit_of_measurement=UNIT_REVOLUTIONS_PER_MINUTE,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "exhaust_fan_speed_rpm": sensor.sensor_schema(
+        ("Exhaust Fan Speed RPM", "exhaust_fan_speed_rpm"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_SPEED,
             unit_of_measurement=UNIT_REVOLUTIONS_PER_MINUTE,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "ventilation_level": sensor.sensor_schema(
+        ("Ventilation Level", "ventilation_level"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "outside_air_temperature": sensor.sensor_schema(
+        ("Outside Air Temperature", "outside_air_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "supply_air_temperature": sensor.sensor_schema(
+        ("Supply Air Temperature", "supply_air_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "return_air_temperature": sensor.sensor_schema(
+        ("Return Air Temperature", "return_air_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "exhaust_air_temperature": sensor.sensor_schema(
+        ("Exhaust Air Temperature", "exhaust_air_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "enthalpy_temperature": sensor.sensor_schema(
+        ("Enthalpy Temperature", "enthalpy_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "ewt_temperature": sensor.sensor_schema(
+        ("EWT Temperature", "ewt_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "reheating_temperature": sensor.sensor_schema(
+        ("Reheating Temperature", "reheating_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "kitchen_hood_temperature": sensor.sensor_schema(
+        ("Kitchen Hood Temperature", "kitchen_hood_temperature"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_TEMPERATURE,
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "return_air_level": sensor.sensor_schema(
+        ("Return Air Level", "return_air_level"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_VOLUME,
             unit_of_measurement=UNIT_CUBIC_METER,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "supply_air_level": sensor.sensor_schema(
+        ("Supply Air Level", "supply_air_level"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_VOLUME,
             unit_of_measurement=UNIT_CUBIC_METER,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bypass_factor": sensor.sensor_schema(
+        ("Bypass Factor", "bypass_factor"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_VOLUME,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bypass_step": sensor.sensor_schema(
+        ("Bypass Step", "bypass_step"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_VOLUME,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bypass_correction": sensor.sensor_schema(
+        ("Bypass Correction", "bypass_correction"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_VOLUME,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bypass_open_hours": sensor.sensor_schema(
+        ("Bypass Open Hours", "bypass_open_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "motor_current_bypass": sensor.sensor_schema(
+        ("Motor Current Bypass", "motor_current_bypass"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_CURRENT,
             unit_of_measurement=UNIT_AMPERE,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "motor_current_preheating": sensor.sensor_schema(
+        ("Motor Current Preheating", "motor_current_preheating"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_CURRENT,
             unit_of_measurement=UNIT_AMPERE,
             accuracy_decimals=1,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "preheating_hours": sensor.sensor_schema(
+        ("Preheating Hours", "preheating_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "level0_hours": sensor.sensor_schema(
+        ("Level 0 Hours", "level0_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "level1_hours": sensor.sensor_schema(
+        ("Level 1 Hours", "level1_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "level2_hours": sensor.sensor_schema(
+        ("Level 2 Hours", "level2_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "level3_hours": sensor.sensor_schema(
+        ("Level 3 Hours", "level3_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "frost_protection_hours": sensor.sensor_schema(
+        ("Frost Protection Hours", "frost_protection_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "frost_protection_minutes": sensor.sensor_schema(
+        ("Frost Protection Minutes", "frost_protection_minutes"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="min",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "filter_hours": sensor.sensor_schema(
+        ("Filter Hours", "filter_hours"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="h",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bypass_valve": sensor.sensor_schema(
+        ("Bypass Valve", "bypass_valve"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_VOLUME,
             unit_of_measurement=UNIT_PERCENT,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bathroom_switch_on_delay_minutes": sensor.sensor_schema(
+        (
+            "Bathroom Switch On Delay Minutes",
+            "bathroom_switch_on_delay_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "bathroom_switch_off_delay_minutes": sensor.sensor_schema(
+        (
+            "Bathroom Switch Off Delay Minutes",
+            "bathroom_switch_off_delay_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "l1_switch_off_delay_minutes": sensor.sensor_schema(
+        (
+            "L1 Switch Off Delay Minutes",
+            "l1_switch_off_delay_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "boost_ventilation_minutes": sensor.sensor_schema(
+        (
+            "Boost Ventilation Minutes",
+            "boost_ventilation_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "filter_warning_weeks": sensor.sensor_schema(
+        ("Filter Warning Weeks", "filter_warning_weeks"): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             unit_of_measurement="weeks",
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "rf_high_time_short_minutes": sensor.sensor_schema(
+        (
+            "RF High Time Short Minutes",
+            "rf_high_time_short_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "rf_high_time_long_minutes": sensor.sensor_schema(
+        (
+            "RF High Time Long Minutes",
+            "rf_high_time_long_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        "extractor_hood_switch_off_delay_minutes": sensor.sensor_schema(
+        (
+            "Extractor Hood Switch Off Delay Minutes",
+            "extractor_hood_switch_off_delay_minutes",
+        ): sensor.sensor_schema(
             device_class=DEVICE_CLASS_EMPTY,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
     },
     "button": {
-        "filter_reset": button.button_schema(ComfoAirButton),
-        "error_reset": button.button_schema(ComfoAirButton),
+        ("Filter Reset", "filter_reset"): button.button_schema(ComfoAirButton),
+        ("Error Reset", "error_reset"): button.button_schema(ComfoAirButton),
     },
 }
 
@@ -280,9 +313,9 @@ CONFIG_SCHEMA = (
     .extend(
         {
             cv.Optional("entities", default={}): {
-                cv.Optional(kn, default={"id": kn}): vn
+                cv.Optional(kn, default={"id": kn, "name": dn}): vn
                 for v in entities.values()
-                for (kn, vn) in v.items()
+                for ((dn, kn), vn) in v.items()
             }
         }
     )
@@ -297,7 +330,7 @@ def to_code(config):
     yield climate.register_climate(var, config)
 
     for kind, values in entities.items():
-        for k in values:
+        for d, k in values:
             sconf = config["entities"][k]
             sconf["internal"] = False
 
