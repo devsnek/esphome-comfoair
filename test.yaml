@@ -1,0 +1,54 @@
+esphome:
+  name: whr930
+  friendly_name: "WHR 930"
+
+esp32:
+  board: m5stack-atom
+  framework:
+    type: arduino
+
+network:
+  enable_ipv6: true
+
+logger:
+  baud_rate: 0
+
+ota:
+  - platform: esphome
+    password: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+wifi:
+  ssid: "ssid"
+  password: "password"
+
+  ap:
+    ssid: "Fallback Hotspot"
+    password: "XXXXXXXXXXXX"
+
+captive_portal:
+
+api:
+  encryption:
+    key: "WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFg="
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO22
+  baud_rate: 9600
+  parity: NONE
+  stop_bits: 1
+  data_bits: 8
+
+external_components:
+  - source:
+      #type: git
+      #url: https://github.com/wichers/esphome-comfoair
+      type: local
+      path: components
+    components: [comfoair]
+
+comfoair:
+  name: "WHR 930"
+  id: comfoair_instance
+  uart_id: uart_bus
