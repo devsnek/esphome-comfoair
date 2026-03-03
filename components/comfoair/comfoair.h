@@ -89,7 +89,7 @@ class ComfoAirComponent : public climate::Climate,
 
   ESPPreferenceObject pref_;
   Preferences preferences_;
-  bool saving_preferences_failed_ = false;
+  bool save_preference_lockout_ = false;
 
 #define V(NAME, ...) Sensor* NAME = nullptr;
   SENSOR_DEFINITIONS(V);

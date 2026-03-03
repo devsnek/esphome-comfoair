@@ -614,16 +614,14 @@ void ComfoAirComponent::parse_data_() {
       preferences.enthalpy_present = msg[9];
       preferences.ewt_present = msg[10];
 
-      if (!saving_preferences_failed_) {
+      if (!save_preference_lockout_) {
         if (memcmp(&preferences, &preferences_, sizeof(Preferences)) != 0) {
-          ESP_LOGW(TAG, "Updated preferences, saving...");
+          save_preference_lockout_ = true;
           if (pref_.save(&preferences)) {
-            ESP_LOGW(TAG, "Updated preferences, restarting...");
-            App.safe_reboot();
+            ESP_LOGW(TAG, "Updated preferences, you should reboot!");
           } else {
             // we don't want to repeatedly call save on flash memory.
             ESP_LOGW(TAG, "Unable to save prefs! this is not good!");
-            saving_preferences_failed_ = true;
           }
         } else {
           ESP_LOGI(TAG, "Preferences are up to date!");
