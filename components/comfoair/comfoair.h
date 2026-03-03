@@ -20,6 +20,17 @@ using text_sensor::TextSensor;
 
 static const char* TAG = "comfoair";
 
+struct Preferences {
+  bool preheating_present = false;
+  bool bypass_present = false;
+  bool fireplace_present = false;
+  bool kitchen_hood_present = false;
+  bool postheating_present = false;
+  bool postheating_pwm_mode_present = false;
+  bool enthalpy_present = false;
+  bool ewt_present = false;
+};
+
 class ComfoAirButton;
 
 class ComfoAirComponent : public climate::Climate,
@@ -113,6 +124,39 @@ class ComfoAirComponent : public climate::Climate,
     check_uart_settings(9600);
   }
 
+  float get_setup_priority() const override { return setup_priority::DATA; }
+
+  void setup() override {
+    pref_ = make_entity_preference<Preferences>();
+    if (!pref_.load(&saved_preferences_)) {
+      saved_preferences_ = {false, false, false, false,
+                            false, false, false, false};
+    }
+    new_preferences_ = saved_preferences_;
+  }
+
+  void loop() override {
+    while (available() != 0) {
+      read_byte(&data_[data_index_]);
+      auto check = check_byte_();
+      if (!check.has_value()) {
+        // finished
+        if (data_[COMMAND_ID_ACK] != COMMAND_ACK) {
+          parse_data_();
+        }
+        data_index_ = 0;
+      } else if (!*check) {
+        // wrong data
+        ESP_LOGV(TAG, "Byte %i of received data frame is invalid.",
+                 data_index_);
+        data_index_ = 0;
+      } else {
+        // next byte
+        data_index_++;
+      }
+    }
+  }
+
   void update() override {
     switch (update_counter_) {
       case -4:
@@ -146,7 +190,7 @@ class ComfoAirComponent : public climate::Climate,
         write_command_(CMD_GET_FAULTS, nullptr, 0);
         break;
       case 6:
-        if (bypass_present_) {
+        if (saved_preferences_.bypass_present) {
           write_command_(CMD_GET_BYPASS_CONTROL_STATUS, nullptr, 0);
         }
         break;
@@ -154,7 +198,7 @@ class ComfoAirComponent : public climate::Climate,
         write_command_(CMD_GET_OPERATION_HOURS, nullptr, 0);
         break;
       case 8:
-        if (preheating_present_) {
+        if (saved_preferences_.preheating_present) {
           write_command_(CMD_GET_PREHEATING_STATUS, nullptr, 0);
         }
         break;
@@ -167,29 +211,69 @@ class ComfoAirComponent : public climate::Climate,
     if (update_counter_ > num_update_counter_elements_) update_counter_ = 0;
   }
 
-  void loop() override {
-    while (available() != 0) {
-      read_byte(&data_[data_index_]);
-      auto check = check_byte_();
-      if (!check.has_value()) {
-        // finished
-        if (data_[COMMAND_ID_ACK] != COMMAND_ACK) {
-          parse_data_();
-        }
-        data_index_ = 0;
-      } else if (!*check) {
-        // wrong data
-        ESP_LOGV(TAG, "Byte %i of received data frame is invalid.",
-                 data_index_);
-        data_index_ = 0;
-      } else {
-        // next byte
-        data_index_++;
-      }
+  void handle_action(const StringRef& action) {
+    if (action == "filter_reset") {
+      uint8_t reset_cmd[4] = {0, 0, 0, 1};
+      write_command_(CMD_RESET_AND_SELF_TEST, reset_cmd, sizeof(reset_cmd));
+    } else if (action == "error_reset") {
+      uint8_t reset_cmd[4] = {1, 0, 0, 0};
+      write_command_(CMD_RESET_AND_SELF_TEST, reset_cmd, sizeof(reset_cmd));
     }
   }
 
-  float get_setup_priority() const override { return setup_priority::DATA; }
+  TextSensor* filter_status{nullptr};
+  Sensor* intake_fan_speed{nullptr};
+  Sensor* exhaust_fan_speed{nullptr};
+  Sensor* intake_fan_speed_rpm{nullptr};
+  Sensor* exhaust_fan_speed_rpm{nullptr};
+  Sensor* ventilation_level{nullptr};
+  Sensor* outside_air_temperature{nullptr};
+  Sensor* supply_air_temperature{nullptr};
+  Sensor* return_air_temperature{nullptr};
+  Sensor* exhaust_air_temperature{nullptr};
+  Sensor* return_air_level{nullptr};
+  Sensor* supply_air_level{nullptr};
+  Sensor* level0_hours{nullptr};
+  Sensor* level1_hours{nullptr};
+  Sensor* level2_hours{nullptr};
+  Sensor* level3_hours{nullptr};
+  BinarySensor* frost_protection_active{nullptr};
+  TextSensor* frost_protection_level{nullptr};
+  Sensor* frost_protection_hours{nullptr};
+  Sensor* frost_protection_minutes{nullptr};
+  Sensor* filter_hours{nullptr};
+  Sensor* filter_warning_weeks{nullptr};
+  BinarySensor* summer_mode{nullptr};
+  BinarySensor* supply_fan_active{nullptr};
+  Sensor* bathroom_switch_on_delay_minutes{nullptr};
+  Sensor* bathroom_switch_off_delay_minutes{nullptr};
+  Sensor* l1_switch_off_delay_minutes{nullptr};
+  Sensor* boost_ventilation_minutes{nullptr};
+  Sensor* rf_high_time_short_minutes{nullptr};
+  Sensor* rf_high_time_long_minutes{nullptr};
+
+  // various optional sensors initialized based on Preferences
+  Sensor* enthalpy_temperature{nullptr};
+
+  Sensor* ewt_temperature{nullptr};
+
+  Sensor* reheating_temperature{nullptr};
+
+  Sensor* extractor_hood_switch_off_delay_minutes{nullptr};
+  Sensor* kitchen_hood_temperature{nullptr};
+
+  BinarySensor* preheating_state{nullptr};
+  TextSensor* preheating_valve{nullptr};
+  Sensor* motor_current_preheating{nullptr};
+  Sensor* preheating_hours{nullptr};
+
+  Sensor* bypass_factor{nullptr};
+  Sensor* bypass_step{nullptr};
+  Sensor* bypass_correction{nullptr};
+  Sensor* bypass_open_hours{nullptr};
+  Sensor* motor_current_bypass{nullptr};
+  Sensor* bypass_valve{nullptr};
+  BinarySensor* bypass_valve_open{nullptr};
 
  private:
   void set_level_(int level) {
@@ -363,7 +447,7 @@ class ComfoAirComponent : public climate::Climate,
         break;
       }
       case RES_GET_VALVE_STATUS: {
-        if (bypass_present_) {
+        if (saved_preferences_.bypass_present) {
           if (bypass_valve != nullptr) {
             bypass_valve->publish_state(msg[0]);
           }
@@ -372,10 +456,9 @@ class ComfoAirComponent : public climate::Climate,
           }
         }
 
-        if (preheating_present_) {
-          if (preheating_state != nullptr) {
-            preheating_state->publish_state(msg[1] != 0);
-          }
+        if (saved_preferences_.preheating_present &&
+            preheating_state != nullptr) {
+          preheating_state->publish_state(msg[1] != 0);
         }
 
         if (motor_current_bypass != nullptr) {
@@ -388,7 +471,7 @@ class ComfoAirComponent : public climate::Climate,
         break;
       }
       case RES_GET_BYPASS_CONTROL_STATUS: {
-        if (bypass_present_) {
+        if (saved_preferences_.bypass_present) {
           if (bypass_factor != nullptr) {
             bypass_factor->publish_state(msg[2]);
           }
@@ -426,7 +509,8 @@ class ComfoAirComponent : public climate::Climate,
         break;
       }
       case RES_GET_SENSOR_DATA: {
-        if (enthalpy_present_ && enthalpy_temperature != nullptr) {
+        if (saved_preferences_.enthalpy_present &&
+            enthalpy_temperature != nullptr) {
           enthalpy_temperature->publish_state((float)msg[0] / 2.0f - 20.0f);
         }
 
@@ -507,7 +591,8 @@ class ComfoAirComponent : public climate::Climate,
           exhaust_air_temperature->publish_state((float)msg[4] / 2.0f - 20.0f);
         }
         // EWT
-        if (ewt_present_ && ewt_temperature != nullptr && msg[5] & 0x10) {
+        if (saved_preferences_.ewt_present && ewt_temperature != nullptr &&
+            msg[5] & 0x10) {
           ewt_temperature->publish_state((float)msg[6] / 2.0f - 20.0f);
         }
         // reheating
@@ -515,26 +600,26 @@ class ComfoAirComponent : public climate::Climate,
           reheating_temperature->publish_state((float)msg[7] / 2.0f - 20.0f);
         }
         // kitchen hood
-        if (kitchen_hood_present_ && kitchen_hood_temperature != nullptr &&
-            msg[5] & 0x40) {
+        if (saved_preferences_.kitchen_hood_present &&
+            kitchen_hood_temperature != nullptr && msg[5] & 0x40) {
           kitchen_hood_temperature->publish_state((float)msg[8] / 2.0f - 20.0f);
         }
 
         break;
       }
       case RES_GET_STATUS: {
-        preheating_present_ = msg[0];
-        bypass_present_ = msg[1];
+        new_preferences_.preheating_present = msg[0];
+        new_preferences_.bypass_present = msg[1];
 
         const char* type =
             msg[2] == 1 ? "Left" : (msg[2] == 2 ? "Right" : "Unknown");
         const char* size =
             msg[3] == 1 ? "Large" : (msg[3] == 2 ? "Small" : "Unknown");
 
-        fireplace_present_ = msg[4] & 0x01;
-        kitchen_hood_present_ = msg[4] & 0x02;
-        postheating_present_ = msg[4] & 0x04;
-        postheating_pwm_mode_present_ = msg[4] & 0x40;
+        new_preferences_.fireplace_present = msg[4] & 0x01;
+        new_preferences_.kitchen_hood_present = msg[4] & 0x02;
+        new_preferences_.postheating_present = msg[4] & 0x04;
+        new_preferences_.postheating_pwm_mode_present = msg[4] & 0x40;
         bool p10_active = msg[6] & 0x01;
         bool p11_active = msg[6] & 0x02;
         bool p12_active = msg[6] & 0x04;
@@ -553,8 +638,25 @@ class ComfoAirComponent : public climate::Climate,
         bool p95_active = msg[8] & 0x20;
         bool p96_active = msg[8] & 0x40;
         bool p97_active = msg[8] & 0x80;
-        enthalpy_present_ = msg[9];
-        ewt_present_ = msg[10];
+        new_preferences_.enthalpy_present = msg[9];
+        new_preferences_.ewt_present = msg[10];
+
+        if (!saving_preferences_failed_) {
+          if (memcmp(&new_preferences_, &saved_preferences_,
+                     sizeof(Preferences)) != 0) {
+            ESP_LOGW(TAG, "Updated preferences, saving...");
+            if (pref_.save(&new_preferences_)) {
+              ESP_LOGW(TAG, "Updated preferences, restarting...");
+              ESP.restart();
+            } else {
+              // we don't want to repeatedly call save on flash memory.
+              ESP_LOGW(TAG, "Unable to save prefs! this is not good!");
+              saving_preferences_failed_ = true;
+            }
+          } else {
+            ESP_LOGI(TAG, "Preferences are up to date!");
+          }
+        }
 
         break;
       }
@@ -584,7 +686,8 @@ class ComfoAirComponent : public climate::Climate,
           bypass_open_hours->publish_state((msg[13] << 8) | msg[14]);
         }
 
-        if (preheating_present_ && preheating_hours != nullptr) {
+        if (saved_preferences_.preheating_present &&
+            preheating_hours != nullptr) {
           preheating_hours->publish_state((msg[11] << 8) | msg[12]);
         }
 
@@ -706,75 +809,10 @@ class ComfoAirComponent : public climate::Climate,
   uint8_t firmware_version_[13]{0};
   uint8_t connector_board_version_[14]{0};
 
-  bool preheating_present_ = false;
-  bool bypass_present_ = false;
-  bool fireplace_present_ = false;
-  bool kitchen_hood_present_ = false;
-  bool postheating_present_ = false;
-  bool postheating_pwm_mode_present_ = false;
-  bool enthalpy_present_ = false;
-  bool ewt_present_ = false;
-
- public:
-  void handle_action(const StringRef& action) {
-    if (action == "filter_reset") {
-      uint8_t reset_cmd[4] = {0, 0, 0, 1};
-      write_command_(CMD_RESET_AND_SELF_TEST, reset_cmd, sizeof(reset_cmd));
-    } else if (action == "error_reset") {
-      uint8_t reset_cmd[4] = {1, 0, 0, 0};
-      write_command_(CMD_RESET_AND_SELF_TEST, reset_cmd, sizeof(reset_cmd));
-    }
-  }
-
-  TextSensor* filter_status{nullptr};
-  TextSensor* frost_protection_level{nullptr};
-  Sensor* intake_fan_speed{nullptr};
-  Sensor* exhaust_fan_speed{nullptr};
-  Sensor* intake_fan_speed_rpm{nullptr};
-  Sensor* exhaust_fan_speed_rpm{nullptr};
-  Sensor* ventilation_level{nullptr};
-  Sensor* outside_air_temperature{nullptr};
-  Sensor* supply_air_temperature{nullptr};
-  Sensor* return_air_temperature{nullptr};
-  Sensor* exhaust_air_temperature{nullptr};
-  Sensor* enthalpy_temperature{nullptr};
-  Sensor* ewt_temperature{nullptr};
-  Sensor* reheating_temperature{nullptr};
-  Sensor* return_air_level{nullptr};
-  Sensor* supply_air_level{nullptr};
-  Sensor* level0_hours{nullptr};
-  Sensor* level1_hours{nullptr};
-  Sensor* level2_hours{nullptr};
-  Sensor* level3_hours{nullptr};
-  BinarySensor* frost_protection_active{nullptr};
-  Sensor* frost_protection_hours{nullptr};
-  Sensor* frost_protection_minutes{nullptr};
-  Sensor* filter_hours{nullptr};
-  BinarySensor* summer_mode{nullptr};
-  BinarySensor* supply_fan_active{nullptr};
-  Sensor* bathroom_switch_on_delay_minutes{nullptr};
-  Sensor* bathroom_switch_off_delay_minutes{nullptr};
-  Sensor* l1_switch_off_delay_minutes{nullptr};
-  Sensor* boost_ventilation_minutes{nullptr};
-  Sensor* filter_warning_weeks{nullptr};
-  Sensor* rf_high_time_short_minutes{nullptr};
-  Sensor* rf_high_time_long_minutes{nullptr};
-  Sensor* extractor_hood_switch_off_delay_minutes{nullptr};
-
-  Sensor* kitchen_hood_temperature{nullptr};
-
-  BinarySensor* preheating_state{nullptr};
-  TextSensor* preheating_valve{nullptr};
-  Sensor* motor_current_preheating{nullptr};
-  Sensor* preheating_hours{nullptr};
-
-  Sensor* bypass_factor{nullptr};
-  Sensor* bypass_step{nullptr};
-  Sensor* bypass_correction{nullptr};
-  Sensor* bypass_open_hours{nullptr};
-  Sensor* motor_current_bypass{nullptr};
-  Sensor* bypass_valve{nullptr};
-  BinarySensor* bypass_valve_open{nullptr};
+  ESPPreferenceObject pref_;
+  Preferences saved_preferences_;
+  Preferences new_preferences_;
+  bool saving_preferences_failed_ = false;
 };
 
 class ComfoAirButton : public button::Button {
