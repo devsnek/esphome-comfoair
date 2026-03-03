@@ -25,7 +25,7 @@ uart:
   data_bits: 8
 
 comfoair:
-  name: "WHR 930"
+  name: "WHR 930" # Adjust for your setup
   uart_id: uart_bus
 ```
 
@@ -54,6 +54,6 @@ This is a list of models that are known to work, feel free to add yours if you t
 * Zehnder ComfoAir Q600 (CAN)
 
 ## Support my work
-Thank you for thinking about supporting my work.
 
+This repository is a fork, support the original author:
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/wichers)
